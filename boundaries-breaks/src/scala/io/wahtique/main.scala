@@ -68,7 +68,11 @@ object App extends IOApp.Simple:
       john <- Controller.getAge("John")
       _ <- IO.println(john) // Right(42)
       jane <- Controller.getAge("Jane")
-      _ <- IO.println(jane) // Left(io.wahtique.ApiError$NotAuthorized: Jane not found in DB)
+      _ <- IO.println(
+        jane
+      ) // Left(io.wahtique.ApiError$NotAuthorized: Jane not found in DB)
       bob <- Controller.getAge("Bob")
-      _ <- IO.println(bob) // Left(io.wahtique.ApiError$NotAuthorized: Bob is not a known user)
+      _ <- IO.println(
+        bob
+      ) // Left(io.wahtique.ApiError$NotAuthorized: Bob is not a known user)
     yield ()
