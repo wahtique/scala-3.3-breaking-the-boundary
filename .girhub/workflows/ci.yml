@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    tags: ["v*"]
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: bleep-build/bleep-setup-action@0.0.1
+      - uses: coursier/cache-action@v6
+        with:
+          extraFiles: bleep.yaml
+      - run: bleep fmt --check
+
+  build:
+    runs-on: ubuntu-latest
+    depends-on: lint
+    steps:
+      - uses: actions/checkout@v3
+      - uses: bleep-build/bleep-setup-action@0.0.1
+      - uses: coursier/cache-action@v6
+        with:
+          extraFiles: bleep.yaml
+      - name: Compile
+        run: bleep compile
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/.bleep/builds/normal
+          key: build-${{ hashFiles('bleep.yaml') }}
+          restore-keys: |
+            build-
+      - name: Build
+        run: bleep compile
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: bleep-build/bleep-setup-action@0.0.1
+      - uses: coursier/cache-action@v6
+        with:
+          extraFiles: bleep.yaml
+      - name: Compile
+        run: bleep compile
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/.bleep/builds/normal
+          key: build-${{ hashFiles('bleep.yaml') }}
+          restore-keys: |
+            build-
+      - name: Test
+        run: bleep test
