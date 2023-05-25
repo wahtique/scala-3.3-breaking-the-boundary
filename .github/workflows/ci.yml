@@ -27,8 +27,6 @@ jobs:
       - uses: coursier/cache-action@v6
         with:
           extraFiles: bleep.yaml
-      - name: Compile
-        run: bleep compile
       - name: Cache
         uses: actions/cache@v2
         with:
@@ -36,7 +34,7 @@ jobs:
           key: build-${{ hashFiles('bleep.yaml') }}
           restore-keys: |
             build-
-      - name: Build
+      - name: Compile
         run: bleep compile
 
   test:
@@ -48,8 +46,6 @@ jobs:
       - uses: coursier/cache-action@v6
         with:
           extraFiles: bleep.yaml
-      - name: Compile
-        run: bleep compile
       - name: Cache
         uses: actions/cache@v2
         with:
