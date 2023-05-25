@@ -1,0 +1,25 @@
+$schema: https://raw.githubusercontent.com/oyvindberg/bleep/master/schema.json
+$version: 0.0.1-M27
+jvm:
+  name: graalvm-java17:22.2.0
+projects:
+  boundaries-breaks:
+    dependencies:
+      - com.lihaoyi::fansi:0.3.1
+      - org.typelevel::cats-effect:3.5.0
+    extends: template-common
+    platform:
+      mainClass: io.wahtique.App
+  tests:
+    dependencies: org.scalatest::scalatest:3.2.13
+    dependsOn: boundaries-breaks
+    extends: template-common
+    isTestProject: true
+templates:
+  template-common:
+    platform:
+      name: jvm
+    scala:
+      options: -encoding utf8 -feature -unchecked
+      strict: true
+      version: 3.3.0

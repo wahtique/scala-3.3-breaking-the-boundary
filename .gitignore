@@ -1,0 +1,17 @@
+# Scala BSP
+.metals/
+.bloop/
+.project/
+.classpath
+.cache-main
+.cache-test
+.cache-bsp
+.history
+.bsp
+.scala-build
+
+# bleep
+.bleep
+
+# editor
+.vscode
