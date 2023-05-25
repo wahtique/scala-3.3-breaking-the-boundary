@@ -20,7 +20,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    depends-on: lint
+    needs: lint
     steps:
       - uses: actions/checkout@v3
       - uses: bleep-build/bleep-setup-action@0.0.1
