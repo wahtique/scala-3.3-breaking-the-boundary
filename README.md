@@ -1,4 +1,4 @@
-# boundary-breaks
+# Breaking the boundary
 
 Just me playing around with Scala 3.3 new shiny boundary / breaks feature 
 
