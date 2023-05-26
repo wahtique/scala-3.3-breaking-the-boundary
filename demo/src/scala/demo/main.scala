@@ -1,12 +1,9 @@
 package demo
 
-import scala.util.boundary
-import scala.util.boundary.Label
-import scala.util.boundary.break
 import cats.effect.IO
 import cats.effect.unsafe.implicits.*
 import cats.effect.IOApp
-import lib.raise.*
+import lib.all.*
 
 // quik n dirty domain model
 
@@ -73,7 +70,7 @@ object App extends IOApp.Simple:
       jane <- Controller.getAge("Jane")
       _ <- IO.println(
         jane
-      ) // Left(io.wahtique.ApiError$NotAuthorized: Jane not found in DB)
+      ) // Left(io.wahtique.ApiError$InternalError: Oopsie)
       bob <- Controller.getAge("Bob")
       _ <- IO.println(
         bob
