@@ -11,7 +11,9 @@ import lib.raise.*
 // quik n dirty domain model
 
 enum ApiError(message: String) extends Exception(message):
+  case NotFound(message: String) extends ApiError(message)
   case NotAuthorized(message: String) extends ApiError(message)
+  case InternalError(message: String) extends ApiError(message)
 
 enum DomainError(message: String) extends Exception(message):
   case NotAdmin(message: String) extends DomainError(message)
@@ -30,10 +32,14 @@ object Controller:
   def getAge(name: String): IO[Either[ApiError, Int]] =
     for
       // `faillible` here labelise this branch of code as being allowed to raise certain errors
-      // in eithers that should be handled somehow 
+      // in eithers that should be handled somehow
       result <- faillible(Service.getAge(name))
       response = result match
-        case Left(e)    => Left(ApiError.NotAuthorized(e.getMessage))
+        case Left(DomainError.NotAdmin(msg)) =>
+          Left(ApiError.NotAuthorized(msg))
+        case Left(DomainError.NotFoundInDB(msg)) => Left(ApiError.NotFound(msg))
+        case Left(RepositoryError.Badaboum(msg)) =>
+          Left(ApiError.InternalError(msg))
         case Right(age) => Right(age)
     yield response
 
