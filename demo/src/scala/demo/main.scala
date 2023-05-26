@@ -1,4 +1,4 @@
-package io.wahtique
+package demo
 
 import scala.util.boundary
 import scala.util.boundary.Label
@@ -6,6 +6,7 @@ import scala.util.boundary.break
 import cats.effect.IO
 import cats.effect.unsafe.implicits.*
 import cats.effect.IOApp
+import lib.raise.*
 
 // quik n dirty domain model
 
@@ -16,16 +17,8 @@ enum DomainError(message: String) extends Exception(message):
   case NotAdmin(message: String) extends DomainError(message)
   case NotFoundInDB(message: String) extends DomainError(message)
 
-// error handling
-
-type CanFail[E <: Throwable] = Label[IO[Left[E, Nothing]]]
-
-object CanFail:
-  inline def apply[E <: Throwable, A](
-      inline body: CanFail[E] ?=> IO[Either[E, A]]
-  ): IO[Either[E, A]] = boundary(body)
-
-def fail[E <: Throwable, A](e: E)(using CanFail[E]): IO[A] = break(IO(Left(e)))
+enum RepositoryError(message: String) extends Exception(message):
+  case Badaboum(message: String) extends RepositoryError(message)
 
 // simple example using a fake webapp
 
@@ -36,27 +29,34 @@ object Config:
 object Controller:
   def getAge(name: String): IO[Either[ApiError, Int]] =
     for
-      result <- CanFail(Service.getAge(name).attempt)
+      // `faillible` here labelise this branch of code as being allowed to raise certain errors
+      // in eithers that should be handled somehow 
+      result <- faillible(Service.getAge(name))
       response = result match
         case Left(e)    => Left(ApiError.NotAuthorized(e.getMessage))
         case Right(age) => Right(age)
     yield response
 
 object Service:
-  def getAge(name: String)(using CanFail[DomainError]): IO[Int] =
+  // `Raise(...)` specifies the type of error that can be raised by this function
+  def getAge(
+      name: String
+  )(using Raise[DomainError | RepositoryError]): IO[Int] =
     if Config.users.contains(name) then Repository.getAgeFromRepo(name)
-    else fail(DomainError.NotAdmin(s"$name is not a known user"))
+    else raise(DomainError.NotAdmin(s"$name is not a known user"))
 
 object Repository:
 
   private val data = Map("John" -> 42)
 
-  def getAgeFromRepo(name: String)(using CanFail[DomainError]): IO[Int] =
+  // Syntax using a "bifunctor"
+  // eqv to `def getAgeFromRepo(name: String)(using Raise[E]): IO[Int]`
+  def getAgeFromRepo(name: String): Faillible[RepositoryError, Int] =
     data
       .get(name)
       .fold(
-        fail[DomainError, Int](
-          DomainError.NotFoundInDB(s"$name not found in DB")
+        raise(
+          RepositoryError.Badaboum("Oopsie")
         )
       )(IO.pure)
 

@@ -1,19 +1,21 @@
 $schema: https://raw.githubusercontent.com/oyvindberg/bleep/master/schema.json
 $version: 0.0.1-M27
 jvm:
-  name: graalvm-java17:22.2.0
+  name: graalvm-java17:22.3.1
 projects:
-  boundaries-breaks:
-    dependencies:
-      - org.typelevel::cats-effect:3.5.0
+  lib:
     extends: template-common
-    platform:
-      mainClass: io.wahtique.App
-  tests:
+  lib-tests:
     dependencies: org.scalatest::scalatest:3.2.13
-    dependsOn: boundaries-breaks
+    dependsOn: lib
     extends: template-common
     isTestProject: true
+  demo:
+    dependsOn:
+      - lib
+    extends: template-common
+    platform:
+      mainClass: demo.App
 templates:
   template-common:
     platform:
@@ -22,3 +24,5 @@ templates:
       options: -encoding utf8 -feature -unchecked
       strict: true
       version: 3.3.0
+    dependencies:
+      - org.typelevel::cats-effect:3.5.0
