@@ -6,15 +6,14 @@ import scala.util.boundary
 import scala.util.boundary.break
 import cats.implicits.*
 
-/** Capacity to throw an exception wrapped in a IO of Either.Left
+/** Capability to throw an exception wrapped in a IO of Either.Left
   *
   * ```
   * final case class MathError(msg: String) extends Exception(msg)
   * def divide(a: Int, b: Int)(using Raise[MathError]): IO[Int] = ???
   * ```
   */
-
-object raise:
+trait RaiseOps:
 
   type Raise[-E <: Throwable] = Label[IO[Left[E, Nothing]]]
 
@@ -30,3 +29,5 @@ object raise:
   )
 
   extension [E <: Throwable](e: E) def !!![A]: Faillible[E, A] = raise(e)
+
+object raise extends RaiseOps
