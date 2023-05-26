@@ -45,6 +45,7 @@ object Controller:
 
 object Service:
   // `Raise(...)` specifies the type of error that can be raised by this function
+  // do not here we could make this cleaner and raise only repository errors
   def getAge(
       name: String
   )(using Raise[DomainError | RepositoryError]): IO[Int] =
@@ -60,11 +61,7 @@ object Repository:
   def getAgeFromRepo(name: String): Faillible[RepositoryError, Int] =
     data
       .get(name)
-      .fold(
-        raise(
-          RepositoryError.Badaboum("Oopsie")
-        )
-      )(IO.pure)
+      .fold(RepositoryError.Badaboum("Oopsie").!!!)(IO.pure)
 
 // main
 

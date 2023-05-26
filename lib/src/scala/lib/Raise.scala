@@ -28,3 +28,5 @@ object raise:
   ): IO[Either[E, A]] = boundary(
     body.attempt.asInstanceOf[IO[Either[E, A]]]
   )
+
+  extension [E <: Throwable](e: E) def !!![A]: Faillible[E, A] = raise(e)
