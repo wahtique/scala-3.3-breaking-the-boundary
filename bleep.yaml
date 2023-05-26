@@ -6,7 +6,7 @@ projects:
   lib:
     extends: template-common
   lib-tests:
-    dependencies: org.scalatest::scalatest:3.2.13
+    dependencies: org.scalameta::munit:1.0.0-M7
     dependsOn: lib
     extends: template-common
     isTestProject: true
