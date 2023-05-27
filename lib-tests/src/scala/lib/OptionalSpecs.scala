@@ -1,7 +1,8 @@
 package lib
 
 import munit.FunSuite
-import optional.*
+import scopes.optional.*
+import lib.scopes.optional
 
 class OptionalSpecs extends FunSuite:
 

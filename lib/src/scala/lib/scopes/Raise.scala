@@ -1,4 +1,4 @@
-package lib
+package lib.scopes
 
 import scala.util.boundary.Label
 import cats.effect.IO

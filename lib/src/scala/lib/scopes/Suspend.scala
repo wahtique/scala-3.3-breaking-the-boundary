@@ -1,10 +1,11 @@
-package lib
+package lib.scopes
 
 import cats.effect.std.Dispatcher
 import cats.effect.kernel.Async
 import cats.effect.IO
-import lib.raise.Faillible
-import lib.raise.Raise
+import lib.scopes.raise.Faillible
+import lib.scopes.raise.Raise
+import lib.scopes.raise
 
 /** From Valentin Bergeron : the poor man suspend
   *
