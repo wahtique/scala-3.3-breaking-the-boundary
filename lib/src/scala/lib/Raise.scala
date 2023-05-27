@@ -22,12 +22,16 @@ trait RaiseOps:
   def raise[E <: Throwable, A](e: E)(using Raise[E]): IO[A] =
     break(IO.pure(Left(e)))
 
-  inline def faillible[E <: Throwable, A](
+  inline def handle[E <: Throwable, A](
       inline body: Raise[E] ?=> IO[A]
   ): IO[Either[E, A]] = boundary(
     body.attempt.asInstanceOf[IO[Either[E, A]]]
   )
 
-  extension [E <: Throwable](e: E) def !!![A]: Faillible[E, A] = raise(e)
+  extension [E <: Throwable](e: E) def ![A]: Faillible[E, A] = raise(e)
+
+  // todo make this work
+  extension [A](ioa: IO[A])
+    inline def ?[E <: Throwable]: IO[Either[E, A]] = handle(ioa)
 
 object raise extends RaiseOps

@@ -10,6 +10,6 @@ See :
 
 Install [bleep](https://bleep.build/docs/installing/) and do 
 ```bash
-bleep run boundaries-breaks
+bleep run demo
 ```
 

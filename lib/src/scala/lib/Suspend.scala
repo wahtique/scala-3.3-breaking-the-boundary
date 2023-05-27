@@ -3,27 +3,30 @@ package lib
 import cats.effect.std.Dispatcher
 import cats.effect.kernel.Async
 import cats.effect.IO
+import lib.raise.Faillible
+import lib.raise.Raise
 
 /** From Valentin Bergeron : the poor man suspend
   *
   * ```
   * val foo = suspend:
-  *   val a = run(IO.pure(2))
-  *   val b = run(IO.pure(3))
+  *   val a = IO.pure(2).await
+  *   val b = IO.pure(3).await
   *   a + b
   * println(foo) // 5
   * ```
   */
 trait SuspendOps:
 
-  inline def run[A, F[_]](io: F[A])(using d: Dispatcher[F]): A =
-    d.unsafeRunSync(io)
-
-  inline def suspend[A, F[_]](
-      thunk: Dispatcher[F] ?=> A
-  )(using Async[F]): F[A] =
+  inline def suspend[A](
+      thunk: Dispatcher[IO] ?=> A
+  ): IO[A] =
     Dispatcher
-      .sequential[F]
-      .use(dispatcher => Async[F].delay(thunk(using dispatcher)))
+      .sequential[IO]
+      .use(dispatcher => IO.delay(thunk(using dispatcher)))
+
+  extension [A](
+      ioa: IO[A]
+  )(using d: Dispatcher[IO]) inline def await: A = d.unsafeRunSync(ioa)
 
 object suspend extends SuspendOps

@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.*
 import cats.effect.IOApp
 import lib.all.*
+import scala.concurrent.duration.*
 
 // quik n dirty domain model
 
@@ -26,19 +27,16 @@ object Config:
 
 // Imagine a tapir endpoint somewhere else
 object Controller:
-  def getAge(name: String): IO[Either[ApiError, Int]] =
-    for
-      // `faillible` here labelise this branch of code as being allowed to raise certain errors
-      // in eithers that should be handled somehow
-      result <- faillible(Service.getAge(name))
-      response = result match
-        case Left(DomainError.NotAdmin(msg)) =>
-          Left(ApiError.NotAuthorized(msg))
-        case Left(DomainError.NotFoundInDB(msg)) => Left(ApiError.NotFound(msg))
-        case Left(RepositoryError.Badaboum(msg)) =>
-          Left(ApiError.InternalError(msg))
-        case Right(age) => Right(age)
-    yield response
+  // suspend to avoid a for...yield block
+  def getAge(name: String): IO[Either[ApiError, Int]] = suspend:
+    val result = handle(Service.getAge(name)).await
+    result match
+      case Left(DomainError.NotAdmin(msg)) =>
+        Left(ApiError.NotAuthorized(msg))
+      case Left(DomainError.NotFoundInDB(msg)) => Left(ApiError.NotFound(msg))
+      case Left(RepositoryError.Badaboum(msg)) =>
+        Left(ApiError.InternalError(msg))
+      case Right(age) => Right(age)
 
 object Service:
   // `Raise(...)` specifies the type of error that can be raised by this function
@@ -58,21 +56,21 @@ object Repository:
   def getAgeFromRepo(name: String): Faillible[RepositoryError, Int] =
     data
       .get(name)
-      .fold(RepositoryError.Badaboum("Oopsie").!!!)(IO.pure)
+      .fold(RepositoryError.Badaboum("Oopsie").!)(IO.pure)
 
 // main
 
 object App extends IOApp.Simple:
-  override def run: IO[Unit] =
-    for
-      john <- Controller.getAge("John")
-      _ <- IO.println(john) // Right(42)
-      jane <- Controller.getAge("Jane")
-      _ <- IO.println(
-        jane
-      ) // Left(io.wahtique.ApiError$InternalError: Oopsie)
-      bob <- Controller.getAge("Bob")
-      _ <- IO.println(
-        bob
-      ) // Left(io.wahtique.ApiError$NotAuthorized: Bob is not a known user)
-    yield ()
+  override def run: IO[Unit] = suspend:
+    // add some delay to simulate network latency
+    // showcase sequenciallity
+    IO.sleep(1.seconds).await
+    val john = Controller.getAge("John").await
+    IO.println(john).await // Right(42)
+    IO.sleep(1.seconds).await
+    val jane = Controller.getAge("Jane").await
+    IO.println(jane).await // Left(io.wahtique.ApiError$InternalError: Oopsie)
+    IO.sleep(2.seconds).await
+    val bob = Controller.getAge("Bob").await
+    IO.println(bob)
+      .await // Left(io.wahtique.ApiError$NotAuthorized: Bob is not a known user)
