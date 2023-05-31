@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: breaking-the-boundary
+  description: POC-ing around Scala 3.3
+  tags:
+    - scala
+  annotations:
+    github.com/project-slug: 'wahtique/scala-3.3-breaking-the-boundary'
+spec:
+  type: library
+  lifecycle: experimental
+  owner: user:wahtique
